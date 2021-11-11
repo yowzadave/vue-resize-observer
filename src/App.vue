@@ -1,12 +1,68 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+    <div class="container">
+      <div
+        ref="a"
+        class="viewport"
+        v-if="maximized === 'a' || !maximized"
+        :class="{ maximized: maximized === 'a'}"
+      >
+        <div>
+          Width: {{ awidth }}
+        </div>
+        <button v-if="!maximized" @click="maximize('a')">Maximize</button>
+        <button v-else @click="minimize">Minimize</button>
+      </div>
+      <div
+        ref="b"
+        class="viewport"
+        v-if="maximized === 'b' || !maximized"
+        :class="{ maximized: maximized === 'b'}"
+      >
+        <div>
+          Width: {{ bwidth }}
+        </div>
+        <button v-if="!maximized" @click="maximize('b')">Maximize</button>
+        <button v-else @click="minimize">Minimize</button>
+      </div>
     </div>
-    <router-view/>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'App',
+  data() {
+    return {
+      maximized: null,
+      awidth: 0,
+      bwidth: 0,
+    };
+  },
+  methods: {
+    maximize(viewport) {
+      this.maximized = viewport;
+    },
+    minimize() {
+      this.maximized = null;
+    },
+  },
+  async mounted() {
+    await this.$nextTick();
+
+    this.awidth = this.$refs.a.clientWidth;
+    this.bwidth = this.$refs.b.clientWidth;
+
+    new ResizeObserver((entities) => {
+      this.awidth = entities[0].target.clientWidth;
+    }).observe(this.$refs.a);
+
+    new ResizeObserver((entities) => {
+      this.bwidth = entities[0].target.clientWidth;
+    }).observe(this.$refs.b);
+  },
+};
+</script>
 
 <style lang="scss">
 #app {
@@ -17,16 +73,17 @@
   color: #2c3e50;
 }
 
-#nav {
-  padding: 30px;
+.container {
+  display: flex;
+}
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+.viewport {
+  width: 300px;
+  height: 300px;
+  border: 1px solid red;
 
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+  &.maximized {
+    width: 600px;
   }
 }
 </style>
